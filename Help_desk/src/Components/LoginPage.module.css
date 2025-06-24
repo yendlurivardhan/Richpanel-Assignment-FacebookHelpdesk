@@ -1,0 +1,56 @@
+.userLoginpage{
+    background-color: aliceblue;
+    border-radius: 10px;
+    width:300px;
+    padding: 30px;
+    margin: 0 auto;
+    margin-top: 70px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+}
+
+.Title{
+    text-align: center;
+    margin-top: -2px;
+    font-weight: bold;
+}
+
+.userEmail{
+    width:280px;
+    padding:5px;
+    border-radius: 6px;
+}
+
+.userPassword{
+    width:280px;
+    padding:5px;
+    border-radius:6px;
+}
+
+.check{
+    width:30px;
+    margin-left: auto;
+    cursor: pointer;
+}
+
+.userLogin{
+    background-color: #004a87;
+    color: white;
+    text-align: center;
+    padding: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: none;
+    width: 290px;
+}
+
+.newuser{
+    text-align: center;
+}
+
+.SignUpBorder{
+    border: none;
+    color: #004a87;
+    font-size: medium;
+    background-color: aliceblue;
+    cursor: pointer;
+}

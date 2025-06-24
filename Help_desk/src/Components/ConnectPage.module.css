@@ -1,0 +1,26 @@
+.userFb{
+    margin: 0 auto;
+    background-color: aliceblue;
+    width:300px;
+    padding:30px;
+    margin-top: 100px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.6);
+    
+}
+
+.FbPage{
+    text-align: center;
+}
+
+.Fbconnect{
+    background-color: #004a87;
+    text-align: center;
+    border-radius: 4px;
+    padding: 10px;
+    color:aliceblue ;
+    width:294px;
+    cursor: pointer;
+    border: none;
+
+}

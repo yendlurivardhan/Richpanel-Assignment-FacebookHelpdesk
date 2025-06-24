@@ -1,0 +1,63 @@
+.inputs{
+    background-color: white;
+    border-radius: 10px;
+    padding: 30px;
+    width: 300px;
+    margin: 0 auto;
+    margin-top: 50px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+}
+
+.Account{
+    text-align: center;
+    font-weight: bold;
+}
+
+.User{
+    border-radius: 5px;
+    width: 280px;
+    padding: 5px;
+}
+
+.Email{
+    border-radius: 5px;
+    width: 280px;
+    padding: 5px;
+}
+
+.password{
+    border-radius: 5px;
+    width: 280px;
+    padding: 5px;
+}
+
+.check{
+    margin-top: 8px;
+    width:30px;
+    margin-left: auto;
+    cursor: pointer;
+}
+
+.signUp{
+    text-align: center;
+    background-color:#004a87;
+    padding: 10px;
+    border-radius: 5px;
+    color: white;
+    cursor: pointer;
+    border: none;
+    width: 290px;
+}
+
+.loginLink {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.Login{
+    border: none;
+    color: #004a87;
+    font-size: medium;
+    background-color:transparent;
+    cursor: pointer;
+}
