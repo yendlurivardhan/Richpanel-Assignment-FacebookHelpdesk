@@ -1,5 +1,5 @@
 import { FaInbox, FaCommentDots, FaUsers, FaChartBar } from "react-icons/fa";
-import Styles from "./SideBar.module.css";
+import Styles from "./Sidebar.module.css";
 
 export default function SideBar() {
   return (
