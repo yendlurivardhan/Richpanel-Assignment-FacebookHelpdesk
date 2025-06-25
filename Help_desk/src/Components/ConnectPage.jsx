@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import Styles from "./connectPage.module.css"; // ✅ Must match exact filename
+import Styles from "./ConnectPage.module.css"; // ✅ Must match exact filename
 import { exchangeTokenAndSavePages } from "../api/facebook"; // Helper to exchange token and save pages
 
 export default function ConnectPage({ onConnect }) {
