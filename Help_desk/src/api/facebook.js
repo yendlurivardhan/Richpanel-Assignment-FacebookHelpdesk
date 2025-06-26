@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE = "http://localhost:4714/api";
+const API_BASE = import.meta.env.VITE_BACKEND_URL + "/api";
 
 export const exchangeTokenAndSavePages = async (accessToken, token) => {
   const res = await axios.post(
@@ -10,17 +10,18 @@ export const exchangeTokenAndSavePages = async (accessToken, token) => {
       headers: {
         Authorization: `Bearer ${token}`,
       },
+      withCredentials: true,
     }
   );
-
   return res.data.pages;
 };
 
 export const getConnectedPages = async (token) => {
-  const res = await axios.get("http://localhost:4714/api/pages", {
+  const res = await axios.get(`${API_BASE}/pages`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
+    withCredentials: true,
   });
   return res.data.pages;
 };

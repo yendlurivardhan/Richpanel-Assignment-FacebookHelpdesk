@@ -1,14 +1,16 @@
-// api/messages.js
 import axios from "axios";
+
+const API_BASE = import.meta.env.VITE_BACKEND_URL + "/api";
 
 export const sendMessage = async (sender, receiver, content, token) => {
   const res = await axios.post(
-    "http://localhost:4714/api/messages",
+    `${API_BASE}/messages`,
     { sender, receiver, content },
     {
       headers: {
         Authorization: `Bearer ${token}`,
       },
+      withCredentials: true,
     }
   );
   return res.data;
@@ -16,11 +18,12 @@ export const sendMessage = async (sender, receiver, content, token) => {
 
 export const getMessages = async (sender, receiver, token) => {
   const res = await axios.get(
-    `http://localhost:4714/api/messages?sender=${sender}&receiver=${receiver}`,
+    `${API_BASE}/messages?sender=${sender}&receiver=${receiver}`,
     {
       headers: {
         Authorization: `Bearer ${token}`,
       },
+      withCredentials: true,
     }
   );
   return res.data;
