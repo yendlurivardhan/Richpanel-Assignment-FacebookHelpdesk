@@ -17,7 +17,7 @@ router.get("/facebook/callback", async (req, res) => {
     const params = new URLSearchParams({
       client_id: process.env.FB_APP_ID,
       client_secret: process.env.FB_APP_SECRET,
-      redirect_uri: `${process.env.BACKEND_URL}/api/auth/facebook/callback`,
+      redirect_uri: `${process.env.FB_LOCAL_URL}`,
       code,
     });
 
