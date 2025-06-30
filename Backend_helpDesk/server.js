@@ -8,25 +8,15 @@ const cors = require("cors");
 const app = express();
 const PORT = process.env.PORT || 4714;
 
-// ✅ Import Routes
-const authRoutes = require("./routes/authRoutes");
-const facebookAuth = require("./routes/facebookAuth");
-const facebookWebhook = require("./routes/facebookWebhook");
-const userRoutes = require("./routes/userRoutes");
-const messageRoutes = require("./routes/messageRoutes");
-const protectedRoutes = require("./routes/protectedRoutes");
+// ✅ CORS Configuration
+const allowedOrigins = "http://localhost:5173";
 
-// ✅ CORS Settings
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "https://facebook-helpdesk-jzrv.vercel.app",
-    ],
+    origin: allowedOrigins,
     credentials: true,
   })
 );
-app.options("*", cors());
 
 app.use(express.json());
 
@@ -46,13 +36,13 @@ mongoose
       })
     );
 
-    // ✅ Mount Routes
-    app.use("/api/auth", authRoutes);
-    app.use("/api/auth", facebookAuth);
-    app.use("/api", facebookWebhook); // Facebook requires /webhook at root
-    app.use("/api/users", userRoutes);
-    app.use("/api/messages", messageRoutes);
-    app.use("/api", protectedRoutes); // optional
+    // ✅ Routes
+    app.use("/api/auth", require("./routes/authRoutes"));
+    app.use("/api/auth", require("./routes/facebookAuth"));
+    app.use("/api", require("./routes/facebookWebhook")); // /webhook
+    app.use("/api/users", require("./routes/userRoutes"));
+    app.use("/api/messages", require("./routes/messageRoutes"));
+    app.use("/api", require("./routes/protectedRoutes")); // optional
 
     // ✅ Health Check
     app.get("/", (req, res) => {

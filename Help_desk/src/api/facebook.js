@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE = import.meta.env.VITE_BACKEND_URL + "/api";
+const API_BASE = import.meta.env.VITE_API_URL + "/api";
 
 export const exchangeTokenAndSavePages = async (accessToken, token) => {
   const res = await axios.post(

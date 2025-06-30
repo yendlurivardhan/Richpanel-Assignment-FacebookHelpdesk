@@ -47,13 +47,19 @@ export default function Register({ setPage }) {
       </label>
 
       <button
-        onClick={async () => {
-          const res = await registerUser(name, email, password);
-          if (res.token || res.message === "User Registration is successful") {
-            alert("Registration is successfull");
-            setPage("login");
-          } else {
-            alert(res.message || "Registration Failed");
+        onClick={async (e) => {
+          e.preventDefault();
+
+          try {
+            const res = await registerUser(name, email, password);
+
+            alert(res.message || "Registration successful");
+
+            // Optional redirect
+            if (setPage) setPage("login");
+          } catch (err) {
+            console.error("❌ Registration Error:", err.message);
+            alert(err.message);
           }
         }}
         className={Styles.signUp}
