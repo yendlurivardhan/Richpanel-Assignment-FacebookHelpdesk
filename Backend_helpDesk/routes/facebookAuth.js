@@ -21,7 +21,9 @@ router.get("/facebook/callback", async (req, res) => {
   const { code } = req.query;
 
   if (!code) {
-    return res.status(400).json({ message: "Missing authorization code from Facebook" });
+    return res
+      .status(400)
+      .json({ message: "Missing authorization code from Facebook" });
   }
 
   try {
@@ -63,6 +65,11 @@ router.get("/facebook/callback", async (req, res) => {
     });
     res
       .status(500)
-      .json({ message: "Facebook login failed", error: err.response?.data || err.message });
+      .json({
+        message: "Facebook login failed",
+        error: err.response?.data || err.message,
+      });
   }
 });
+
+module.exports = router;

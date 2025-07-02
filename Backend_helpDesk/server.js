@@ -26,13 +26,18 @@ mongoose
   .then(() => {
     console.log("✅ MongoDB connected");
 
+    const mongoStore = new MongoStore({
+      mongoUrl: process.env.MONGO_URL,
+      collectionName: "sessions",
+    });
+
     app.use(
       session({
         secret: process.env.SESSION_SECRET || "defaultSecret123",
         resave: false,
         saveUninitialized: false,
-        store: MongoStore.create({ mongoUrl: process.env.MONGO_URL }),
-        cookie: { maxAge: 1000 * 60 * 60 * 24 }, // 1 day
+        store: mongoStore,
+        cookie: { maxAge: 1000 * 60 * 60 * 24 },
       })
     );
 
@@ -55,5 +60,5 @@ mongoose
     });
   })
   .catch((err) => {
-    console.error("❌ MongoDB connection error:", err.message);
+    console.error("❌  error:", err.message);
   });
