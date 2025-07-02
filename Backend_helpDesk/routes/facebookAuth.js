@@ -20,16 +20,14 @@ router.get("/facebook", (req, res) => {
 router.get("/facebook/callback", async (req, res) => {
   const { code } = req.query;
 
+  console.log("👉 Facebook callback hit");
+  console.log("👉 Code received:", code);
+
   if (!code) {
-    return res
-      .status(400)
-      .json({ message: "Missing authorization code from Facebook" });
+    return res.status(400).json({ message: "Missing authorization code from Facebook" });
   }
 
   try {
-    // 🔍 Log redirect_uri to confirm it's correct
-    console.log("👉 redirect_uri used:", process.env.FB_CALLBACK_URL);
-
     const tokenParams = new URLSearchParams({
       client_id: process.env.FB_APP_ID,
       client_secret: process.env.FB_APP_SECRET,
@@ -37,14 +35,19 @@ router.get("/facebook/callback", async (req, res) => {
       code,
     });
 
-    const tokenRes = await axios.get(
-      `https://graph.facebook.com/v19.0/oauth/access_token?${tokenParams.toString()}`
-    );
+    const tokenURL = `https://graph.facebook.com/v19.0/oauth/access_token?${tokenParams.toString()}`;
+    console.log("👉 Requesting token from:", tokenURL);
+
+    const tokenRes = await axios.get(tokenURL);
     const { access_token } = tokenRes.data;
 
-    const fbUserRes = await axios.get(
-      `https://graph.facebook.com/me?fields=id,name,email,picture&access_token=${access_token}`
-    );
+    console.log("✅ Access Token received:", access_token);
+
+    const fbUserURL = `https://graph.facebook.com/me?fields=id,name,email,picture&access_token=${access_token}`;
+    const fbUserRes = await axios.get(fbUserURL);
+
+    console.log("✅ Facebook User Data:", fbUserRes.data);
+
     const { id: fbId, name, email } = fbUserRes.data;
 
     let user = await User.findOne({ email });
@@ -52,23 +55,22 @@ router.get("/facebook/callback", async (req, res) => {
       user = await User.create({ name, email, facebookId: fbId });
     }
 
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "7d",
-    });
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
+
+    console.log("✅ JWT Token created:", token);
 
     res.redirect(`${process.env.FRONTEND_URL}/connect?token=${token}`);
   } catch (err) {
     console.error("❌ Facebook login error:", {
+      message: err.message,
+      response: err.response?.data,
       status: err.response?.status,
-      data: err.response?.data,
-      url: err.config?.url,
     });
-    res
-      .status(500)
-      .json({
-        message: "Facebook login failed",
-        error: err.response?.data || err.message,
-      });
+
+    res.status(500).json({
+      message: "Facebook login failed",
+      error: err.response?.data || err.message,
+    });
   }
 });
 
