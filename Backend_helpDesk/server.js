@@ -9,7 +9,7 @@ const app = express();
 const PORT = process.env.PORT || 4714;
 
 // ✅ CORS Configuration
-const allowedOrigins = "http://localhost:5173";
+const allowedOrigins = [process.env.FRONTEND_URL || "http://localhost:5173"];
 
 app.use(
   cors({
@@ -32,19 +32,19 @@ mongoose
         resave: false,
         saveUninitialized: false,
         store: MongoStore.create({ mongoUrl: process.env.MONGO_URL }),
-        cookie: { maxAge: 1000 * 60 * 60 * 24 },
+        cookie: { maxAge: 1000 * 60 * 60 * 24 }, // 1 day
       })
     );
 
-    // ✅ Routes
+    // ✅ Route Mounting
     app.use("/api/auth", require("./routes/authRoutes"));
     app.use("/api/auth", require("./routes/facebookAuth"));
-    app.use("/api", require("./routes/facebookWebhook")); // /webhook
+    app.use("/api", require("./routes/facebookWebhook"));
     app.use("/api/users", require("./routes/userRoutes"));
     app.use("/api/messages", require("./routes/messageRoutes"));
-    app.use("/api", require("./routes/protectedRoutes")); // optional
+    app.use("/api", require("./routes/protectedRoutes"));
 
-    // ✅ Health Check
+    // ✅ Root Route
     app.get("/", (req, res) => {
       res.send("Hello from Facebook Helpdesk backend!");
     });

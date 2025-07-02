@@ -1,25 +1,22 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const passport = require("passport");
 const User = require("../models/User.js");
 const authMiddleware = require("../middleware/auth.js");
 
 const router = express.Router();
 
-// 🔒 Check JWT_SECRET exists
 if (!process.env.JWT_SECRET) {
   throw new Error("❌ JWT_SECRET is not defined in environment variables");
 }
 
-// ✅ User Registration
+// User Registration
 router.post("/register", async (req, res) => {
   try {
     const { name, email, password } = req.body;
-
     if (!name || !email || !password) {
-      return res
-        .status(400)
-        .json({ message: "Name, Email, and Password are required" });
+      return res.status(400).json({ message: "Name, Email, and Password are required" });
     }
 
     const userExists = await User.findOne({ email });
@@ -39,7 +36,7 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// ✅ User Login
+// User Login
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -50,9 +47,7 @@ router.post("/login", async (req, res) => {
     }
 
     if (!user.password) {
-      return res
-        .status(401)
-        .json({ message: "Password login not available for this user" });
+      return res.status(401).json({ message: "Password login not available for this user" });
     }
 
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
@@ -77,12 +72,36 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// ✅ Protected Route Test
+// Protected Route
 router.get("/protected", authMiddleware, (req, res) => {
   res.status(200).json({
     message: "✅ Access granted to protected route",
     user: req.user,
   });
 });
+
+// Facebook Login Start
+router.get(
+  "/facebook",
+  passport.authenticate("facebook", {
+    scope: ["email", "pages_show_list", "pages_messaging", "pages_read_engagement"],
+  })
+);
+
+// Facebook Callback
+router.get(
+  "/facebook/callback",
+  passport.authenticate("facebook", {
+    failureRedirect: "/login",
+    session: true,
+  }),
+  (req, res) => {
+    const redirectURL = process.env.FRONTEND_URL
+      ? `${process.env.FRONTEND_URL}/connect`
+      : "https://google.com"; // fallback redirect if FRONTEND_URL not set
+
+    res.redirect(redirectURL);
+  }
+);
 
 module.exports = router;

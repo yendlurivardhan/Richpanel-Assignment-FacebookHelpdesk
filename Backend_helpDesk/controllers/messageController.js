@@ -5,7 +5,9 @@ const sendMessage = async (req, res) => {
     const { receiver, content } = req.body;
 
     if (!receiver || !content) {
-      return res.status(400).json({ message: "Receiver and content are required" });
+      return res
+        .status(400)
+        .json({ message: "Receiver and content are required" });
     }
 
     const newMessage = new Message({
@@ -29,7 +31,7 @@ const getMessages = async (req, res) => {
       $or: [
         { sender: req.user._id, receiver: userId },
         { sender: userId, receiver: req.user._id },
-      ]
+      ],
     }).sort({ createdAt: 1 });
 
     res.json(messages);

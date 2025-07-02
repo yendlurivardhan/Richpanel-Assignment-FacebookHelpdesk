@@ -1,13 +1,11 @@
 import { useEffect } from "react";
-import Styles from "./ConnectPage.module.css"; // ✅ Must match exact filename
-import { exchangeTokenAndSavePages } from "../api/facebook"; // Helper to exchange token and save pages
+import Styles from "./ConnectPage.module.css";
+import { exchangeTokenAndSavePages } from "../api/facebook";
 
 export default function ConnectPage({ onConnect }) {
   const handleFacebookConnect = () => {
     const fbAppId = import.meta.env.VITE_FB_APP_ID;
-
-    // ✅ Use your deployed backend URL
-    const redirectUri = "https://facebook-helpdesk-8.onrender.com/api/auth/facebook/callback";
+    const redirectUri = import.meta.env.VITE_FB_CALLBACK_URL;
 
     const scope = [
       "pages_messaging",
@@ -21,19 +19,16 @@ export default function ConnectPage({ onConnect }) {
       redirectUri
     )}&scope=${scope}`;
 
-    // 🔁 Redirect user to Facebook Login
     window.location.href = facebookAuthUrl;
   };
 
   useEffect(() => {
-    // 🔄 After Facebook redirects back with a token
     const params = new URLSearchParams(window.location.search);
     const jwtToken = params.get("token");
 
     if (jwtToken) {
       localStorage.setItem("token", jwtToken);
 
-      // 🔁 Optionally fetch pages immediately
       exchangeTokenAndSavePages(null, jwtToken)
         .then((pages) => {
           console.log("Saved Pages:", pages);
