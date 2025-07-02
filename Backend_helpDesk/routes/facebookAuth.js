@@ -21,13 +21,13 @@ router.get("/facebook/callback", async (req, res) => {
   const { code } = req.query;
 
   if (!code) {
-    return res
-      .status(400)
-      .json({ message: "Missing authorization code from Facebook" });
+    return res.status(400).json({ message: "Missing authorization code from Facebook" });
   }
 
   try {
-    // Exchange code for access token
+    // 🔍 Log redirect_uri to confirm it's correct
+    console.log("👉 redirect_uri used:", process.env.FB_CALLBACK_URL);
+
     const tokenParams = new URLSearchParams({
       client_id: process.env.FB_APP_ID,
       client_secret: process.env.FB_APP_SECRET,
@@ -40,33 +40,29 @@ router.get("/facebook/callback", async (req, res) => {
     );
     const { access_token } = tokenRes.data;
 
-    // Fetch Facebook user's profile
     const fbUserRes = await axios.get(
       `https://graph.facebook.com/me?fields=id,name,email,picture&access_token=${access_token}`
     );
     const { id: fbId, name, email } = fbUserRes.data;
 
-    // Check if user exists or create one
     let user = await User.findOne({ email });
     if (!user) {
       user = await User.create({ name, email, facebookId: fbId });
     }
 
-    // Generate JWT
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
       expiresIn: "7d",
     });
 
-    // Redirect to frontend with token
     res.redirect(`${process.env.FRONTEND_URL}/connect?token=${token}`);
   } catch (err) {
-  console.error("❌ Facebook login error:", {
-    status: err.response?.status,
-    data: err.response?.data,
-    url: err.config?.url,
-  });
-  res.status(500).json({ message: "Facebook login failed", error: err.response?.data || err.message });
-}
+    console.error("❌ Facebook login error:", {
+      status: err.response?.status,
+      data: err.response?.data,
+      url: err.config?.url,
+    });
+    res
+      .status(500)
+      .json({ message: "Facebook login failed", error: err.response?.data || err.message });
+  }
 });
-
-module.exports = router;
