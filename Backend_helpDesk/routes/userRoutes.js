@@ -1,9 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const User = require("../models/User");
+const authMiddleware = require("../middleware/auth");
 
-// ✅ Get all users (dev/testing)
-router.get("/users", async (req, res) => {
+// ✅ Get all users (Dev/Test route — protect in production)
+router.get("/users", authMiddleware, async (req, res) => {
   try {
     const users = await User.find({}, "_id name email");
     res.status(200).json(users);
@@ -12,7 +13,8 @@ router.get("/users", async (req, res) => {
   }
 });
 
-router.get("/users/:id", async (req, res) => {
+// ✅ Get a single user by ID
+router.get("/users/:id", authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select("-password");
     if (!user) {

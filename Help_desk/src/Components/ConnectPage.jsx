@@ -4,21 +4,8 @@ import { exchangeTokenAndSavePages } from "../api/facebook";
 
 export default function ConnectPage({ onConnect }) {
   const handleFacebookConnect = () => {
-    const fbAppId = import.meta.env.VITE_FB_APP_ID;
-    const redirectUri = import.meta.env.VITE_FB_CALLBACK_URL;
-
-    const scope = [
-      "pages_messaging",
-      "pages_show_list",
-      "pages_read_engagement",
-      "email",
-      "public_profile",
-    ].join(",");
-
-    const facebookAuthUrl = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${fbAppId}&redirect_uri=${encodeURIComponent(
-      redirectUri
-    )}&scope=${scope}`;
-
+    const backendUrl = import.meta.env.VITE_API_URL;
+    const facebookAuthUrl = `${backendUrl}/api/auth/facebook`;
     window.location.href = facebookAuthUrl;
   };
 

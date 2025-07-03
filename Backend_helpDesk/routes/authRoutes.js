@@ -7,28 +7,22 @@ const authMiddleware = require("../middleware/auth.js");
 
 const router = express.Router();
 
-if (!process.env.JWT_SECRET) {
-  throw new Error("❌ JWT_SECRET is not defined in environment variables");
-}
-
-// User Registration
+// Register
 router.post("/register", async (req, res) => {
   try {
     const { name, email, password } = req.body;
+
     if (!name || !email || !password) {
       return res.status(400).json({ message: "Name, Email, and Password are required" });
     }
 
-    const userExists = await User.findOne({ email });
-    if (userExists) {
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    const salt = await bcrypt.genSalt(10);
-    const hashPassword = await bcrypt.hash(password, salt);
-
-    const newUser = new User({ name, email, password: hashPassword });
-    await newUser.save();
+    const hash = await bcrypt.hash(password, 10);
+    const user = await User.create({ name, email, password: hash });
 
     res.status(201).json({ message: "✅ User registered successfully" });
   } catch (err) {
@@ -36,43 +30,43 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// User Login
+// Login
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ message: "User doesn't exist" });
-    }
+    if (!user) return res.status(404).json({ message: "User doesn't exist" });
 
     if (!user.password) {
       return res.status(401).json({ message: "Password login not available for this user" });
     }
 
-    const isPasswordCorrect = await bcrypt.compare(password, user.password);
-    if (!isPasswordCorrect) {
-      return res.status(401).json({ message: "Incorrect password" });
-    }
+    const match = await bcrypt.compare(password, user.password);
+    if (!match) return res.status(401).json({ message: "Incorrect password" });
 
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "7d",
-    });
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
 
     res.status(200).json({
       token,
-      user: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-      },
+      user: { _id: user._id, name: user.name, email: user.email },
     });
   } catch (err) {
     res.status(500).json({ message: "Server Error", error: err.message });
   }
 });
 
-// Protected Route
+// Get current user (from JWT)
+router.get("/me", authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.userId).select("-password");
+    res.status(200).json(user);
+  } catch (err) {
+    res.status(500).json({ message: "Error fetching user", error: err.message });
+  }
+});
+
+// Protected route (for testing)
 router.get("/protected", authMiddleware, (req, res) => {
   res.status(200).json({
     message: "✅ Access granted to protected route",
@@ -80,7 +74,7 @@ router.get("/protected", authMiddleware, (req, res) => {
   });
 });
 
-// Facebook Login Start
+// Facebook Login - Step 1
 router.get(
   "/facebook",
   passport.authenticate("facebook", {
@@ -88,18 +82,23 @@ router.get(
   })
 );
 
-// Facebook Callback
+// Facebook Callback - Step 2
 router.get(
   "/facebook/callback",
   passport.authenticate("facebook", {
-    failureRedirect: "/login",
-    session: true,
+    session: false,
+    failureRedirect: `${process.env.FRONTEND_URL}/login`,
   }),
   (req, res) => {
-    const redirectURL = process.env.FRONTEND_URL
-      ? `${process.env.FRONTEND_URL}/connect`
-      : "https://google.com"; // fallback redirect if FRONTEND_URL not set
+    if (!req.user || !req.user._id) {
+      return res.redirect(`${process.env.FRONTEND_URL}/login?error=NoUserId`);
+    }
 
+    const token = jwt.sign({ userId: req.user._id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
+
+    const redirectURL = `${process.env.FRONTEND_URL}/connect?token=${token}`;
     res.redirect(redirectURL);
   }
 );

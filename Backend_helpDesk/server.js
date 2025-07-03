@@ -1,64 +1,41 @@
-require("dotenv").config();
+require("dotenv").config();                         // ✅ Step 1: Load environment
+require("./config/passport");                       // ✅ Step 2: Register strategy before routes
+
 const express = require("express");
-const mongoose = require("mongoose");
 const session = require("express-session");
-const MongoStore = require("connect-mongo");
+const passport = require("passport");
+const mongoose = require("mongoose");
 const cors = require("cors");
 
-const app = express();
-const PORT = process.env.PORT || 4714;
+const authRoutes = require("./routes/authRoutes");  
 
-// ✅ CORS Configuration
-const allowedOrigins = [process.env.FRONTEND_URL || "http://localhost:5173"];
+const app = express();
+
+app.use(cors({ origin: process.env.FRONTEND_URL, credentials: true }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.use(
-  cors({
-    origin: allowedOrigins,
-    credentials: true,
+  session({
+    secret: process.env.SESSION_SECRET || "defaultsecret",
+    resave: false,
+    saveUninitialized: false,
   })
 );
 
-app.use(express.json());
+app.use(passport.initialize());
+app.use(passport.session());
 
-// ✅ MongoDB Connection + Session
+app.use("/api/auth", authRoutes);
+
 mongoose
   .connect(process.env.MONGO_URL)
   .then(() => {
     console.log("✅ MongoDB connected");
-
-    const mongoStore = new MongoStore({
-      mongoUrl: process.env.MONGO_URL,
-      collectionName: "sessions",
-    });
-
-    app.use(
-      session({
-        secret: process.env.SESSION_SECRET || "defaultSecret123",
-        resave: false,
-        saveUninitialized: false,
-        store: mongoStore,
-        cookie: { maxAge: 1000 * 60 * 60 * 24 },
-      })
-    );
-
-    // ✅ Route Mounting
-    app.use("/api/auth", require("./routes/authRoutes"));
-    app.use("/api/auth", require("./routes/facebookAuth"));
-    app.use("/api", require("./routes/facebookWebhook"));
-    app.use("/api/users", require("./routes/userRoutes"));
-    app.use("/api/messages", require("./routes/messageRoutes"));
-    app.use("/api", require("./routes/protectedRoutes"));
-
-    // ✅ Root Route
-    app.get("/", (req, res) => {
-      res.send("Hello from Facebook Helpdesk backend!");
-    });
-
-    // ✅ Start Server
-    app.listen(PORT, "0.0.0.0", () => {
-      console.log(`🚀 Server running at http://localhost:${PORT}`);
+    app.listen(process.env.PORT || 3000, () => {
+      console.log(`🚀 Server running on port ${process.env.PORT}`);
     });
   })
   .catch((err) => {
-    console.error("❌  error:", err.message);
+    console.error("❌ MongoDB connection error:", err.message);
   });
