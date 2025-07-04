@@ -1,13 +1,15 @@
 import "./App.css";
 import DisplayDesk from "./Components/DisplayDesk";
-import { BrowserRouter as Router } from "react-router-dom"; // ✅ Add this
+import ConnectPage from "./Components/ConnectPage";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 function App() {
   return (
     <Router>
-      <div className="App">
-        <DisplayDesk />
-      </div>
+      <Routes>
+        <Route path="/" element={<DisplayDesk />} />
+        <Route path="/connect" element={<ConnectPage />} />
+      </Routes>
     </Router>
   );
 }
