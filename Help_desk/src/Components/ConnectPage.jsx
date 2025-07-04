@@ -10,22 +10,40 @@ export default function ConnectPage({ onConnect }) {
   };
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const jwtToken = params.get("token");
+    const urlParams = new URLSearchParams(window.location.search);
+    let jwtToken = urlParams.get("token");
+    let accessToken = urlParams.get("access_token");
 
-    if (jwtToken) {
+    // ✅ Handle if access token is in hash (after #)
+    if (!accessToken && window.location.hash.includes("access_token")) {
+      const hashParams = new URLSearchParams(window.location.hash.slice(1));
+      accessToken = hashParams.get("access_token");
+    }
+
+    console.log("📘 Access Token:", accessToken);
+
+    if (jwtToken && accessToken) {
       localStorage.setItem("token", jwtToken);
 
-      exchangeTokenAndSavePages(null, jwtToken)
+      exchangeTokenAndSavePages(accessToken, jwtToken)
         .then((pages) => {
-          console.log("Saved Pages:", pages);
-          if (onConnect) onConnect();
+          console.log("✅ Pages saved:", pages);
+          localStorage.setItem("connected", "true");
+          if (onConnect) {
+            console.log("✅ onConnect called");
+            onConnect();
+          }
         })
         .catch((err) => {
-          console.error("Error saving pages:", err);
+          console.error(
+            "❌ Error saving pages:",
+            err.response?.data || err.message
+          );
         });
+    } else {
+      console.warn("⚠️ Missing token or access token in URL");
     }
-  }, []);
+  }, []); 
 
   return (
     <div className={Styles.userFb}>

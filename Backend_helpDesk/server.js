@@ -7,7 +7,8 @@ const passport = require("passport");
 const mongoose = require("mongoose");
 const cors = require("cors");
 
-const authRoutes = require("./routes/authRoutes");  
+const authRoutes = require("./routes/authRoutes");
+const facebookRoutes = require("./routes/facebookRoutes");
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use("/api/auth", authRoutes);
+app.use("/api/facebook", facebookRoutes);
 
 mongoose
   .connect(process.env.MONGO_URL)

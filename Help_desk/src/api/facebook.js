@@ -2,18 +2,17 @@ import axios from "axios";
 
 const API_BASE = import.meta.env.VITE_API_URL + "/api";
 
-export const exchangeTokenAndSavePages = async (accessToken, token) => {
+export const exchangeTokenAndSavePages = async (accessToken, jwtToken) => {
   const res = await axios.post(
-    `${API_BASE}/facebook/exchange-token`,
-    { accessToken },
+    `${import.meta.env.VITE_API_URL}/api/facebook/exchange-token`,
+    { accessToken }, // ✅ request body
     {
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${jwtToken}`, // ✅ JWT in headers
       },
-      withCredentials: true,
     }
   );
-  return res.data.pages;
+  return res.data;
 };
 
 export const getConnectedPages = async (token) => {

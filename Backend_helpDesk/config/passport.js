@@ -10,35 +10,30 @@ passport.use(
       clientSecret: process.env.FB_APP_SECRET,
       callbackURL: process.env.FB_CALLBACK_URL,
       profileFields: ["id", "displayName", "emails"],
+      enableProof: true,
+      passReqToCallback: true,
     },
-    async (accessToken, refreshToken, profile, done) => {
+    async (req, accessToken, refreshToken, profile, done) => {
       try {
-        const email = profile.emails?.[0]?.value || "no-email";
-
-        // ✅ Try finding by Facebook ID first
+        console.log("✅ Facebook Strategy Triggered");
+        console.log("📘 accessToken:", accessToken);
+        console.log("👤 Facebook Profile:", profile);
         let user = await User.findOne({ facebookId: profile.id });
 
         if (!user) {
-          // ✅ If not found by Facebook ID, try by email
-          user = await User.findOne({ email });
-
-          if (user) {
-            // ✅ If user exists, just link Facebook ID to existing user
-            user.facebookId = profile.id;
-            await user.save();
-          } else {
-            // ✅ Else create new user
-            user = await User.create({
-              facebookId: profile.id,
-              name: profile.displayName,
-              email,
-            });
-          }
+          user = await User.create({
+            name: profile.displayName,
+            email: profile.emails?.[0]?.value,
+            facebookId: profile.id,
+          });
         }
+
+        // ✅ Attach token to req for frontend redirect
+        req.accessToken = accessToken;
 
         return done(null, user);
       } catch (err) {
-        return done(err, false);
+        return done(err, null);
       }
     }
   )
