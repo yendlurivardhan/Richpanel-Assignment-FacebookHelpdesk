@@ -54,7 +54,7 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// ✅ Get current user from token
+// ✅ Get current user
 router.get("/me", authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.user.userId).select("-password");
@@ -64,7 +64,7 @@ router.get("/me", authMiddleware, async (req, res) => {
   }
 });
 
-// ✅ Facebook OAuth - Step 1
+// ✅ Facebook OAuth Step 1
 router.get(
   "/facebook",
   passport.authenticate("facebook", {
@@ -78,7 +78,7 @@ router.get(
   })
 );
 
-// ✅ Facebook OAuth - Callback
+// ✅ Facebook OAuth Callback
 router.get(
   "/facebook/callback",
   passport.authenticate("facebook", {
@@ -86,13 +86,25 @@ router.get(
     failureRedirect: "/login",
   }),
   async (req, res) => {
-    const user = req.user;
-    const jwtToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
+    try {
+      console.log("✅ Facebook callback triggered");
 
-    const accessToken = req.accessToken; // ✅ passed from strategy
+      const user = req.user;
+      const accessToken = req.accessToken;
 
-    const redirectUrl = `${process.env.FRONTEND_URL}/connect?token=${jwtToken}&access_token=${accessToken}`;
-    res.redirect(redirectUrl);
+      console.log("👤 Facebook user:", user);
+      console.log("📘 accessToken from req:", accessToken);
+
+      const jwtToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
+
+      const redirectUrl = `${process.env.FRONTEND_URL}/connect?token=${jwtToken}&access_token=${accessToken}`;
+      console.log("🔁 Redirecting to:", redirectUrl);
+
+      res.redirect(redirectUrl);
+    } catch (err) {
+      console.error("❌ Error in Facebook callback:", err.message);
+      res.redirect(`${process.env.FRONTEND_URL}/connect?error=callback_failed`);
+    }
   }
 );
 

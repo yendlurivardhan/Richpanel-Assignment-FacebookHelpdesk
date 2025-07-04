@@ -4,7 +4,7 @@ import { exchangeTokenAndSavePages } from "../api/facebook";
 
 export default function ConnectPage({ onConnect }) {
   const handleFacebookConnect = () => {
-    const backendUrl = import.meta.env.VITE_API_URL;
+    const backendUrl = import.meta.env.VITE_FB_CALLBACK_URL;
     const facebookAuthUrl = `${backendUrl}/api/auth/facebook`;
     window.location.href = facebookAuthUrl;
   };
