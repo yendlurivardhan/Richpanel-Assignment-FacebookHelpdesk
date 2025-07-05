@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE = import.meta.env.VITE_FB_CALLBACK_URL+ "/api";
+const API_BASE = import.meta.env.VITE_BACKEND_URL+ "/api";
 
 export const sendMessage = async (sender, receiver, content, token) => {
   const res = await axios.post(

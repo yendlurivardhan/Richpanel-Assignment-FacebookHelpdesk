@@ -1,4 +1,4 @@
-const API = import.meta.env.VITE_FB_CALLBACK_URL;
+const API = import.meta.env.VITE_BACKEND_URL;
 
 export const registerUser = async (name, email, password) => {
   const res = await fetch(`${API}/api/auth/register`, {
