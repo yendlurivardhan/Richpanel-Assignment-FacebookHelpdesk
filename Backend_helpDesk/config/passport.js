@@ -1,6 +1,8 @@
 const passport = require("passport");
 const FacebookStrategy = require("passport-facebook").Strategy;
 const User = require("../models/User");
+require("dotenv").config();
+const accessToken = process.env.PAGE_ACCESS_TOKEN;
 console.log("✅ passport-facebook strategy loaded");
 
 passport.use(
