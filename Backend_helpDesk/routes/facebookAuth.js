@@ -34,7 +34,7 @@ router.get("/facebook/callback", async (req, res) => {
       code,
     });
 
-    const tokenURL = `https://graph.facebook.com/v19.0/oauth/access_token?${tokenParams.toString()}`;
+    const tokenURL = `https://graph.facebook.com/v23.0/oauth/access_token?${tokenParams.toString()}`;
     console.log("👉 Requesting token from:", tokenURL);
 
     const tokenRes = await axios.get(tokenURL);

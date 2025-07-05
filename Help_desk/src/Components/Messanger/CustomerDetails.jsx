@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import Styles from "./CustomerDetails.module.css";
-import { getUserById } from "../../api/users"; 
+import { getUserById } from "../../api/users";
 
-export default function ProfilePanel({ userId }) {
+export default function ProfilePanel({ userId, psid }) {
   const [user, setUser] = useState(null);
 
   const token =
@@ -10,19 +10,31 @@ export default function ProfilePanel({ userId }) {
     new URLSearchParams(window.location.search).get("token");
 
   useEffect(() => {
-    if (!userId || !token) return;
-
     const fetchUser = async () => {
       try {
-        const data = await getUserById(userId, token);
-        setUser(data);
+        if (userId) {
+          const data = await getUserById(userId, token);
+          setUser(data);
+        } else if (psid) {
+          const res = await fetch(
+            `${import.meta.env.VITE_BACKEND_URL}/api/users/facebook/${psid}`
+          );
+          const data = await res.json();
+          setUser({
+            name: `${data.first_name} ${data.last_name}`,
+            picture: data.profile_pic,
+            email: "Facebook User",
+            firstName: data.first_name,
+            lastName: data.last_name,
+          });
+        }
       } catch (err) {
         console.error("Error fetching user profile:", err);
       }
     };
 
-    fetchUser();
-  }, [userId, token]);
+    if ((userId || psid) && token) fetchUser();
+  }, [userId, psid, token]);
 
   if (!user) return <div className={Styles.profilePanel}>Loading profile...</div>;
 

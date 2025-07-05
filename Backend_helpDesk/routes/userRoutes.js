@@ -1,15 +1,46 @@
 const express = require("express");
-const axios = require("axios");
 const router = express.Router();
+const User = require("../models/User");
+const authMiddleware = require("../middleware/auth");
+const axios = require("axios");
 
-// ✅ Get Facebook user's name & photo using PSID
-router.get("/:psid", async (req, res) => {
+// ✅ Get all users (Dev/Test route — protect in production)
+router.get("/users", authMiddleware, async (req, res) => {
+  try {
+    const users = await User.find({}, "_id name email");
+    res.status(200).json(users);
+  } catch (err) {
+    res.status(500).json({ message: "Server Error", error: err.message });
+  }
+});
+
+// ✅ Get a single user by Mongo ID
+router.get("/users/:id", authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select("-password");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json(user);
+  } catch (err) {
+    res.status(500).json({ message: "Server Error", error: err.message });
+  }
+});
+
+// ✅ Get Facebook user profile using PSID
+router.get("/facebook/:psid", async (req, res) => {
   const { psid } = req.params;
   const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
 
   try {
     const response = await axios.get(
-      `https://graph.facebook.com/v19.0/${psid}?fields=first_name,last_name,profile_pic&access_token=${PAGE_ACCESS_TOKEN}`
+      `https://graph.facebook.com/v23.0/${psid}`,
+      {
+        params: {
+          fields: "first_name,last_name,profile_pic",
+          access_token: PAGE_ACCESS_TOKEN,
+        },
+      }
     );
     res.status(200).json(response.data);
   } catch (error) {
