@@ -11,7 +11,7 @@ export default function ConnectPage({ onConnect }) {
   const handleFacebookConnect = () => {
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
     const facebookAuthUrl = `${backendUrl}/api/auth/facebook`;
-    console.log("📢 Will redirect to:", facebookAuthUrl); // ✅ ADD THIS
+    console.log("📢 Will redirect to:", facebookAuthUrl); 
     window.location.href = facebookAuthUrl;
   };
 

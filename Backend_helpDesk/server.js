@@ -1,5 +1,5 @@
-require("dotenv").config();                         // ✅ Step 1: Load environment
-require("./config/passport");                       // ✅ Step 2: Register passport strategy
+require("dotenv").config();
+require("./config/passport");
 
 const express = require("express");
 const session = require("express-session");
@@ -9,22 +9,23 @@ const cors = require("cors");
 
 const authRoutes = require("./routes/authRoutes");
 const facebookRoutes = require("./routes/facebookRoutes");
+const userRoutes = require("./routes/userRoutes"); // Facebook PSID route
 
 const app = express();
 
-// ✅ CORS: allow deployed frontend on Vercel
+// ✅ CORS setup
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL, // should be: https://richpanel-assignment-facebook-helpd.vercel.app
+    origin: process.env.FRONTEND_URL,
     credentials: true,
   })
 );
 
-// ✅ Middlewares
+// ✅ Body parser
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ✅ Session
+// ✅ Session setup
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "defaultsecret",
@@ -37,11 +38,30 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-// ✅ Routes
+// ✅ API Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/facebook", facebookRoutes);
+app.use("/api/users", userRoutes);
 
-// ✅ MongoDB + Start server
+// ✅ Facebook Webhook Route — this logs PSID from user messages
+app.post("/webhook", (req, res) => {
+  const body = req.body;
+
+  if (body.object === "page") {
+    body.entry.forEach(entry => {
+      const messagingEvent = entry.messaging[0];
+      const psid = messagingEvent.sender.id;
+
+      console.log("✅ PSID received:", psid);
+    });
+
+    res.sendStatus(200);
+  } else {
+    res.sendStatus(404);
+  }
+});
+
+// ✅ MongoDB & Start server
 mongoose
   .connect(process.env.MONGO_URL)
   .then(() => {
