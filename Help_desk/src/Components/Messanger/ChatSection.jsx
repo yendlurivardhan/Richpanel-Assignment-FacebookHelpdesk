@@ -1,15 +1,16 @@
 import { useState, useEffect } from "react";
 import Styles from "./ChatSection.module.css";
 import { sendMessage, getMessages } from "../../api/messages";
-import ProfilePanel from "./CustomerDetails";
+import axios from "axios"; // ⬅️ Import axios to fetch FB user name
 
 export default function ChatSection() {
   const [content, setContent] = useState("");
   const [messages, setMessages] = useState([]);
+  const [receiverName, setReceiverName] = useState("");
 
   const sender = JSON.parse(localStorage.getItem("user"))?._id;
-  const receiver = "685231cfd2a5898a7c43e017"; 
-  
+  const receiver = "PSID_HERE"; // ⬅️ Replace with real PSID
+
   const token =
     localStorage.getItem("token") ||
     new URLSearchParams(window.location.search).get("token");
@@ -17,28 +18,35 @@ export default function ChatSection() {
   useEffect(() => {
     if (!sender || !receiver || !token) return;
 
+    // ✅ Fetch messages
     const fetchMessages = async () => {
       try {
         const data = await getMessages(sender, receiver, token);
-
-        if (!Array.isArray(data)) {
-          console.error("Expected array, got:", data);
-          return;
-        }
-
-        setMessages(data);
+        if (Array.isArray(data)) setMessages(data);
       } catch (err) {
         console.error("Error fetching messages", err);
-        setMessages([]);
+      }
+    };
+
+    // ✅ Fetch Facebook user name
+    const fetchUserName = async () => {
+      try {
+        const res = await axios.get(
+          `${import.meta.env.VITE_BACKEND_URL}/api/facebook/user-profile/${receiver}`
+        );
+        const { first_name, last_name } = res.data;
+        setReceiverName(`${first_name} ${last_name}`);
+      } catch (err) {
+        console.error("Error fetching FB user name", err);
       }
     };
 
     fetchMessages();
+    fetchUserName();
   }, [sender, receiver, token]);
 
   const handleSend = async () => {
     if (!content.trim()) return;
-
     try {
       const res = await sendMessage(sender, receiver, content, token);
       setMessages((prev) => [...prev, res]);
@@ -51,7 +59,7 @@ export default function ChatSection() {
   return (
     <div className={Styles.ChatSection}>
       <div className={Styles.Header}>
-        <ProfilePanel userId={receiver} />
+        <h3>{receiverName || "Chat"}</h3>
       </div>
 
       <div className={Styles.chatContainer}>

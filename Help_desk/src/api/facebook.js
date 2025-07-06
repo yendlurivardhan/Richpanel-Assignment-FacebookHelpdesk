@@ -1,14 +1,14 @@
 import axios from "axios";
 
-const API_BASE = import.meta.env.VITE_BACKEND_URL+ "/api";
+const API_BASE = import.meta.env.VITE_BACKEND_URL + "/api";
 
 export const exchangeTokenAndSavePages = async (accessToken, jwtToken) => {
   const res = await axios.post(
-    `${import.meta.env.VITE_BACKEND_URL}/api/facebook/exchange-token`,
-    { accessToken }, // ✅ request body
+    `${API_BASE}/facebook/exchange-token`,
+    { accessToken },
     {
       headers: {
-        Authorization: `Bearer ${jwtToken}`, // ✅ JWT in headers
+        Authorization: `Bearer ${jwtToken}`,
       },
     }
   );
@@ -23,4 +23,9 @@ export const getConnectedPages = async (token) => {
     withCredentials: true,
   });
   return res.data.pages;
+};
+
+export const getFacebookUserProfile = async (psid) => {
+  const res = await axios.get(`${API_BASE}/facebook/user-profile/${psid}`);
+  return res.data;
 };
