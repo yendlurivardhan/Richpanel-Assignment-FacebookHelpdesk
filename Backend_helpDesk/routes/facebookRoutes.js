@@ -55,19 +55,38 @@ router.get("/conversations/:psid", async (req, res) => {
   const { psid } = req.params;
 
   try {
-    // Step 1: Get conversation ID
-    const convRes = await axios.get(`https://graph.facebook.com/v23.0/${psid}/conversations`, {
-      params: { access_token: PAGE_ACCESS_TOKEN },
+    // Get all conversations for the page
+    const convRes = await axios.get(`https://graph.facebook.com/v23.0/me/conversations`, {
+      params: { access_token: PAGE_ACCESS_TOKEN }
     });
 
-    const conversationId = convRes.data.data?.[0]?.id;
-    if (!conversationId) {
+    const allConversations = convRes.data.data;
+
+    // Find the conversation with this PSID
+    let matchedConversation = null;
+
+    for (const convo of allConversations) {
+      const participantsRes = await axios.get(
+        `https://graph.facebook.com/v23.0/${convo.id}/participants`,
+        { params: { access_token: PAGE_ACCESS_TOKEN } }
+      );
+
+      const participants = participantsRes.data.data;
+      const user = participants.find(p => p.id === psid);
+
+      if (user) {
+        matchedConversation = convo.id;
+        break;
+      }
+    }
+
+    if (!matchedConversation) {
       return res.status(404).json({ message: "No conversation found for this PSID" });
     }
 
-    // Step 2: Get messages from that conversation
+    // Get messages
     const msgRes = await axios.get(
-      `https://graph.facebook.com/v23.0/${conversationId}/messages`,
+      `https://graph.facebook.com/v23.0/${matchedConversation}/messages`,
       { params: { access_token: PAGE_ACCESS_TOKEN } }
     );
 

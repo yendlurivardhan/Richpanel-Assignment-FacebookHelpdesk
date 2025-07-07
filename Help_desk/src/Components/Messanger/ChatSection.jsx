@@ -1,15 +1,17 @@
 import { useState, useEffect } from "react";
 import Styles from "./ChatSection.module.css";
 import { sendMessage, getMessages } from "../../api/messages";
-import axios from "axios"; // ⬅️ Import axios to fetch FB user name
+import axios from "axios";
 
 export default function ChatSection() {
   const [content, setContent] = useState("");
   const [messages, setMessages] = useState([]);
-  const [receiverName, setReceiverName] = useState("");
+  const [receiverName, setReceiverName] = useState("Username");
+  const [loading, setLoading] = useState(true);
 
   const sender = JSON.parse(localStorage.getItem("user"))?._id;
-  const receiver = "PSID_HERE"; // ⬅️ Replace with real PSID
+  const receiver =
+    localStorage.getItem("receiverPSID") || "REAL_PSID_HERE"; // Replace with actual PSID or dynamic logic
 
   const token =
     localStorage.getItem("token") ||
@@ -18,7 +20,6 @@ export default function ChatSection() {
   useEffect(() => {
     if (!sender || !receiver || !token) return;
 
-    // ✅ Fetch messages
     const fetchMessages = async () => {
       try {
         const data = await getMessages(sender, receiver, token);
@@ -28,7 +29,6 @@ export default function ChatSection() {
       }
     };
 
-    // ✅ Fetch Facebook user name
     const fetchUserName = async () => {
       try {
         const res = await axios.get(
@@ -38,6 +38,8 @@ export default function ChatSection() {
         setReceiverName(`${first_name} ${last_name}`);
       } catch (err) {
         console.error("Error fetching FB user name", err);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -59,7 +61,7 @@ export default function ChatSection() {
   return (
     <div className={Styles.ChatSection}>
       <div className={Styles.Header}>
-        <h3>{receiverName || "Chat"}</h3>
+        <h3>{loading ? "Loading..." : receiverName}</h3>
       </div>
 
       <div className={Styles.chatContainer}>
