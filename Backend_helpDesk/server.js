@@ -6,21 +6,18 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const path = require("path");
 
-dotenv.config();
+dotenv.config(); // ✅ Loads .env variables
 
 const app = express();
 const PORT = process.env.PORT || 4714;
 
-// ✅ Connect MongoDB
+// ✅ MongoDB Connection
 mongoose
-  .connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+  .connect(process.env.MONGO_URL)
   .then(() => console.log("✅ MongoDB connected"))
   .catch((err) => console.error("❌ MongoDB error:", err));
 
-// ✅ Middleware
+// ✅ Middlewares
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -32,22 +29,22 @@ app.use(
   })
 );
 
-// ✅ Initialize Passport
-require("./config/passport"); // Your passport config (with FacebookStrategy)
+// ✅ Passport Setup
+require("./config/passport"); // Must exist and export a strategy
 app.use(passport.initialize());
 app.use(passport.session());
 
 // ✅ Routes
-app.use("/api/auth", require("./routes/authRoutes")); // Facebook login + callback
-app.use("/api/facebook", require("./routes/facebookRoutes")); // user-profile, exchange-token, messages
-app.use("/api", require("./routes/facebookWebhook"));
+app.use("/api/auth", require("./routes/authRoutes")); // <-- make sure this file exists
+app.use("/api/facebook", require("./routes/facebookRoutes")); // <-- make sure this file exists
+app.use("/api", require("./routes/facebookWebhook")); // <-- must export /webhook route
 
-// ✅ Root route
+// ✅ Root Route
 app.get("/", (req, res) => {
   res.send("🎉 Facebook Helpdesk Server is Running");
 });
 
-// ✅ Start server
+// ✅ Start Server
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
