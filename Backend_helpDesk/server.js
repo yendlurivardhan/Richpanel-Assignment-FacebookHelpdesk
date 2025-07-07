@@ -38,7 +38,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // ✅ Routes
-app.use("/api/auth", require("./routes/auth")); // Facebook login + callback
+app.use("/api/auth", require("./routes/authRoutes")); // Facebook login + callback
 app.use("/api/facebook", require("./routes/facebookRoutes")); // user-profile, exchange-token, messages
 app.use("/api", require("./routes/facebookWebhook"));
 
