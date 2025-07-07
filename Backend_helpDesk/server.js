@@ -6,21 +6,27 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const path = require("path");
 
-dotenv.config(); // ✅ Loads .env variables
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 4714;
 
-// ✅ MongoDB Connection
+// ✅ Connect MongoDB
 mongoose
-  .connect(process.env.MONGO_URL)
+  .connect(process.env.MONGO_URI, {
+    // Note: These options are deprecated in newer mongoose
+    // You can remove them if you're using Mongoose 7+
+    // useNewUrlParser: true,
+    // useUnifiedTopology: true,
+  })
   .then(() => console.log("✅ MongoDB connected"))
   .catch((err) => console.error("❌ MongoDB error:", err));
 
-// ✅ Middlewares
+// ✅ Middleware
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json()); // Parse JSON
+app.use(express.urlencoded({ extended: true })); // Parse form data
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "super_secret",
@@ -29,22 +35,22 @@ app.use(
   })
 );
 
-// ✅ Passport Setup
-require("./config/passport"); // Must exist and export a strategy
+// ✅ Initialize Passport
+require("./config/passport"); // Facebook strategy setup
 app.use(passport.initialize());
 app.use(passport.session());
 
 // ✅ Routes
-app.use("/api/auth", require("./routes/authRoutes")); // <-- make sure this file exists
-app.use("/api/facebook", require("./routes/facebookRoutes")); // <-- make sure this file exists
-app.use("/api", require("./routes/facebookWebhook")); // <-- must export /webhook route
+app.use("/api/auth", require("./routes/authRoutes")); // Facebook login + callback
+app.use("/api/facebook", require("./routes/facebookRoutes")); // Get profile, messages, exchange token
+app.use("/api", require("./routes/facebookWebhook")); // Facebook Messenger webhook (GET + POST)
 
-// ✅ Root Route
+// ✅ Root route
 app.get("/", (req, res) => {
   res.send("🎉 Facebook Helpdesk Server is Running");
 });
 
-// ✅ Start Server
+// ✅ Start server
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
