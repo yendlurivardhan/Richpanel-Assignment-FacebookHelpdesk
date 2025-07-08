@@ -9,13 +9,18 @@ import AgentProfile from "./Messanger/AgentProfile";
 import Sidebar from "./Messanger/Sidebar";
 import ConversationList from "./Messanger/ConversationList";
 import ChatSection from "./Messanger/ChatSection";
-import CustomerDetails from "./Messanger/CustomerDetails";
+import ProfilePanel from "./Messanger/CustomerDetails"; // ✅ Rename to ProfilePanel
 
 export default function DisplayDesk() {
   const [page, setPage] = useState("register");
   const [connected, setConnected] = useState(
     localStorage.getItem("connected") === "true"
   );
+  const [selectedUserPsid, setSelectedUserPsid] = useState(null); // ✅ Add state
+
+  const handleUserSelect = (psid) => {
+    setSelectedUserPsid(psid); // ✅ Set selected PSID
+  };
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -35,20 +40,21 @@ export default function DisplayDesk() {
     return (
       <ConnectPage
         onConnect={() => {
-          localStorage.setItem("connected", "true"); // ✅ Add this line
+          localStorage.setItem("connected", "true");
           setConnected(true);
           setPage("messenger");
         }}
       />
     );
   if (page === "delete") return <DeletePage />;
+
   if (page === "messenger")
     return (
       <AgentProfile>
         <Sidebar />
-        <ConversationList />
-        <ChatSection />
-        <CustomerDetails />
+        <ConversationList onSelect={handleUserSelect} />
+        <ChatSection psid={selectedUserPsid} />
+        <ProfilePanel psid={selectedUserPsid} />
       </AgentProfile>
     );
 

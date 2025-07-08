@@ -1,13 +1,11 @@
 import axios from "axios";
 
-const API_BASE = import.meta.env.VITE_BACKEND_URL+ "/api";
+const API_BASE = import.meta.env.VITE_BACKEND_URL + "/api";
 
-export const getUserById = async (id, token) => {
-  const res = await axios.get(`${API_BASE}/users/${id}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    withCredentials: true,
-  });
-  return res.data;
+export const getFacebookUserByPsid = async (psid) => {
+  const res = await fetch(
+    `${import.meta.env.VITE_BACKEND_URL}/api/users/facebook/${psid}`
+  );
+  if (!res.ok) throw new Error("Failed to fetch Facebook user");
+  return await res.json();
 };

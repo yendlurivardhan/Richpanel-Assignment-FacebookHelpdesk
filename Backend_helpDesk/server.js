@@ -17,17 +17,16 @@ mongoose
   .then(() => console.log("✅ MongoDB connected"))
   .catch((err) => console.error("❌ MongoDB error:", err));
 
-// ✅ CORS Setup - Important fix
+// ✅ Middleware
 app.use(
   cors({
-    origin: "https://richpanel-assignment-facebook-helpd.vercel.app", // ✅ Frontend URL
-    credentials: true, // ✅ Allow sending cookies/session
+    origin: "https://richpanel-assignment-facebook-helpd.vercel.app", // frontend URL
+    credentials: true, // allow cookies, sessions
   })
 );
 
-// ✅ Middleware
-app.use(express.json()); // Parse JSON
-app.use(express.urlencoded({ extended: true })); // Parse form data
+app.use(express.json()); // parse JSON
+app.use(express.urlencoded({ extended: true })); // parse URL-encoded form data
 
 app.use(
   session({
@@ -38,14 +37,15 @@ app.use(
 );
 
 // ✅ Initialize Passport
-require("./config/passport");
+require("./config/passport"); // load Facebook strategy
 app.use(passport.initialize());
 app.use(passport.session());
 
 // ✅ Routes
 app.use("/api/auth", require("./routes/authRoutes")); // Facebook login
-app.use("/api/facebook", require("./routes/facebookRoutes")); // Messages, profile, token exchange
-app.use("/api", require("./routes/facebookWebhook")); // Webhook for Messenger
+app.use("/api/facebook", require("./routes/facebookRoutes")); // user profile, token exchange, send message
+app.use("/api", require("./routes/facebookWebhook")); // webhook GET + POST
+app.use("/api/users", require("./routes/userRoutes"));
 
 // ✅ Root route
 app.get("/", (req, res) => {
