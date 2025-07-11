@@ -34,18 +34,29 @@ router.get("/facebook/:psid", async (req, res) => {
 
   try {
     const response = await axios.get(
-      `https://graph.facebook.com/v23.0/${psid}`,
+      `https://graph.facebook.com/v18.0/${psid}`,
       {
         params: {
-          fields: "first_name,last_name,profile_pic",
           access_token: PAGE_ACCESS_TOKEN,
+          fields: "first_name,last_name,profile_pic",
         },
       }
     );
-    res.status(200).json(response.data);
+
+    const { first_name, last_name, profile_pic } = response.data;
+
+    res.status(200).json({
+      name: `${first_name} ${last_name}`,
+      firstName: first_name,
+      lastName: last_name,
+      picture: profile_pic,
+    });
   } catch (error) {
     console.error("❌ Facebook error:", error.response?.data || error.message);
-    res.status(500).json({ error: "Failed to fetch Facebook user profile" });
+    res.status(500).json({
+      error: "Failed to fetch Facebook user profile",
+      details: error.response?.data || error.message,
+    });
   }
 });
 

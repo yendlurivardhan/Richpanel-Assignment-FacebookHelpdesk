@@ -9,7 +9,7 @@ import AgentProfile from "./Messanger/AgentProfile";
 import Sidebar from "./Messanger/Sidebar";
 import ConversationList from "./Messanger/ConversationList";
 import ChatSection from "./Messanger/ChatSection";
-import ProfilePanel from "./Messanger/CustomerDetails"; // ✅ Rename to ProfilePanel
+import ProfilePanel from "./Messanger/ProfilePanel"; 
 
 export default function DisplayDesk() {
   const [page, setPage] = useState("register");
