@@ -13,46 +13,67 @@ const PORT = process.env.PORT || 4714;
 
 // ✅ Connect MongoDB
 mongoose
-  .connect(process.env.MONGO_URL)
+  .connect(process.env.MONGO_URL, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
   .then(() => console.log("✅ MongoDB connected"))
   .catch((err) => console.error("❌ MongoDB error:", err));
 
-// ✅ Middleware
+// ✅ CORS Setup
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://richpanel-assignment-facebook-helpd.vercel.app",
+];
+
 app.use(
   cors({
-    origin: "https://richpanel-assignment-facebook-helpd.vercel.app", // frontend URL
-    credentials: true, // allow cookies, sessions
+    origin: function (origin, callback) {
+      // allow requests with no origin (like mobile apps or curl requests)
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
   })
 );
 
-app.use(express.json()); // parse JSON
-app.use(express.urlencoded({ extended: true })); // parse URL-encoded form data
+// ✅ Middlewares
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
+// ✅ Session
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "super_secret",
     resave: false,
     saveUninitialized: true,
+    cookie: {
+      secure: false, // true in production with HTTPS
+      httpOnly: true,
+    },
   })
 );
 
-// ✅ Initialize Passport
-require("./config/passport"); // load Facebook strategy
+// ✅ Passport Init
+require("./config/passport"); // load strategies
 app.use(passport.initialize());
 app.use(passport.session());
 
 // ✅ Routes
-app.use("/api/auth", require("./routes/authRoutes")); // Facebook login
-app.use("/api/facebook", require("./routes/facebookRoutes")); // user profile, token exchange, send message
+app.use("/api/auth", require("./routes/authRoutes")); // register/login
+app.use("/api/facebook", require("./routes/facebookRoutes")); // user profile & FB send msg
 app.use("/api", require("./routes/facebookWebhook")); // webhook GET + POST
-app.use("/api/users", require("./routes/userRoutes"));
+app.use("/api/users", require("./routes/userRoutes")); // get users etc.
 
 // ✅ Root route
 app.get("/", (req, res) => {
   res.send("🎉 Facebook Helpdesk Server is Running");
 });
 
-// ✅ Start server
+// ✅ Start Server
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
